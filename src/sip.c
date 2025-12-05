@@ -36,6 +36,7 @@
 #include "option.h"
 #include "setting.h"
 #include "filter.h"
+#include "ai_output.h"
 
 /**
  * @brief Linked list of parsed calls
@@ -45,6 +46,11 @@
  */
 sip_call_list_t calls =
 { 0 };
+
+/**
+ * @brief AI output context for agent mode
+ */
+ai_output_ctx_t *ai_output_ctx = NULL;
 
 /* @brief list of methods and responses */
 sip_code_t sip_codes[] = {
@@ -434,6 +440,11 @@ sip_check_packet(packet_t *packet)
 
     // Add the message to the call
     call_add_message(call, msg);
+
+    // Send to AI output if enabled
+    if (ai_output_ctx && ai_output_ctx->enabled) {
+        ai_output_add_message(ai_output_ctx, msg);
+    }
 
     // check if message is a retransmission
     call_msg_retrans_check(msg);
@@ -1045,4 +1056,19 @@ sip_list_sorter(vector_t *vector, void *item)
 
     // Put this item at the begining of the vector
     vector_insert(vector, item, 0);
+}
+
+void
+sip_set_ai_output_mode(int enabled)
+{
+    if (enabled) {
+        if (!ai_output_ctx) {
+            ai_output_ctx = ai_output_init(NULL);
+        }
+    } else {
+        if (ai_output_ctx) {
+            ai_output_destroy(ai_output_ctx);
+            ai_output_ctx = NULL;
+        }
+    }
 }

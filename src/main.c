@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include "option.h"
 #include "vector.h"
+#include "sip.h"
 #include "capture.h"
 #include "capture_eep.h"
 #include "curses/ui_save.h"
@@ -396,6 +397,11 @@ main(int argc, char* argv[])
         sng_free(token);
     }
 
+    // Enable AI agent output mode if requested
+    if (ai_agent_mode) {
+        sip_set_ai_output_mode(1);
+    }
+
     // If we have an input file, load it
     for (i = 0; i < vector_count(infiles); i++) {
         // Try to load file
@@ -536,6 +542,11 @@ main(int argc, char* argv[])
 
     // Deinitialize interface
     ncurses_deinit();
+
+    // Disable AI output mode (will flush remaining batches)
+    if (ai_agent_mode) {
+        sip_set_ai_output_mode(0);
+    }
 
     // Deinitialize configuration options
     deinit_options();

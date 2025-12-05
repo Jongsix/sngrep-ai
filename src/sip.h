@@ -513,4 +513,13 @@ sip_sort_list();
 void
 sip_list_sorter(vector_t *vector, void *item);
 
+/**
+ * @brief Enable AI agent output mode
+ *
+ * Initialize AI output context for JSON formatted output
+ * suitable for AI agent consumption
+ */
+void
+sip_set_ai_output_mode(int enabled);
+
 #endif
