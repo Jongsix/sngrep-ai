@@ -169,6 +169,7 @@ target_sources( sngrep
 		src/util.c
 		src/hash.c
 		src/vector.c
+		src/ai_output.c
 	#
 		src/curses/ui_panel.c
 		src/curses/scrollbar.c
@@ -286,12 +287,15 @@ message( STATUS "" )
 enable_testing()            # "ctest" will run all tests
 add_custom_target( tests )  # "make tests" will build all tests
 
-foreach( i 001 002 003 004 005 006 007 008 009 010 011 )
+foreach( i 001 002 003 004 005 006 007 008 009 010 011 012 )
 	add_executable( test_${i} EXCLUDE_FROM_ALL tests/test_${i}.c )
 	if( i STREQUAL "007" )
 		target_sources( test_${i} PUBLIC src/vector.c src/util.c )
 	elseif( i STREQUAL "010" )
 		target_sources( test_${i} PUBLIC src/hash.c )
+	elseif( i STREQUAL "012" )
+		target_sources( test_${i} PUBLIC src/ai_output.c src/util.c )
+		target_compile_definitions( test_${i} PRIVATE AI_OUTPUT_TEST_MODE )
 	endif()
 	target_include_directories( test_${i} PRIVATE ${CMAKE_CURRENT_BINARY_DIR} )
 
