@@ -75,6 +75,8 @@ You can find [detailed instructions for some distributions](https://github.com/i
 
 See `--help` for a list of available flags and their syntax
 
+### Terminal UI Mode (Default)
+
 For example, sngrep can be used to view SIP packets from a pcap file, also applying filters
 
     sngrep -I file.pcap host 192.168.1.1 and port 5060
@@ -82,6 +84,71 @@ For example, sngrep can be used to view SIP packets from a pcap file, also apply
 or live capturing, saving packets to a new file
 
 	sngrep -d eth0 -O save.pcap port 5060 and udp
+
+### AI Agent Mode (JSON Output)
+
+**NEW:** sngrep now supports AI agent mode for automated SIP traffic analysis. This mode outputs structured JSON data suitable for AI/ML processing and real-time analysis.
+
+#### Features
+
+- 🤖 JSON-formatted output optimized for AI consumption
+- 📦 Batch-based processing (configurable batch size, default: 10 messages)
+- 📊 Complete SIP message details including headers and full payload
+- 🚀 Real-time streaming output for live capture
+- 💡 Headless operation (no ncurses interface)
+
+#### Usage Examples
+
+Analyze PCAP file and output to JSON:
+
+    sngrep --ai-agent -I capture.pcap > output.json
+
+Live capture with JSON output:
+
+    sngrep --ai-agent -d eth0 > live_analysis.json
+
+With BPF filter:
+
+    sngrep --ai-agent -I file.pcap port 5060 and udp > filtered.json
+
+Pipe to AI analysis tool:
+
+    sngrep --ai-agent -d eth0 | python ai_analyzer.py
+
+#### JSON Output Format
+
+Each batch contains detailed message information:
+
+```json
+{
+  "batch_id": 1,
+  "timestamp": "2025-12-05T14:34:28.736Z",
+  "packet_count": 10,
+  "messages": [
+    {
+      "index": 0,
+      "timestamp": "2005-07-04T18:32:52.844Z",
+      "call_id": "578222729-4665d775@578222732-4665d77",
+      "method": "REGISTER",
+      "response_code": null,
+      "from": "user@sip.example.com",
+      "to": "user@sip.example.com",
+      "src_addr": "192.168.1.2:5060",
+      "dst_addr": "212.242.33.35:5060",
+      "cseq": 68,
+      "payload": "REGISTER sip:sip.example.com SIP/2.0\r\n..."
+    }
+  ]
+}
+```
+
+#### Use Cases
+
+- **AI-powered SIP monitoring**: Feed JSON output to machine learning models for anomaly detection
+- **Automated analysis**: Process SIP flows with scripts and analytics tools
+- **Real-time alerting**: Parse JSON stream for specific patterns and trigger alerts
+- **Traffic statistics**: Generate reports and visualizations from structured data
+- **Integration**: Connect sngrep with your existing monitoring and analysis pipeline
 
 
 ## Configuration

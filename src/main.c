@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include "option.h"
 #include "vector.h"
+#include "sip.h"
 #include "capture.h"
 #include "capture_eep.h"
 #include "curses/ui_save.h"
@@ -79,6 +80,7 @@ usage()
            "    -F --no-config\t Do not read configuration from default config file\n"
            "    -T --text\t Save pcap to text file\n"
            "    -R --rotate\t\t Rotate calls when capture limit have been reached\n"
+           "    -A --ai-agent\t Output JSON formatted data for AI agent analysis\n"
            "    -T --telephone-event\t\t capture and parse RTP telephone-event packets\n"
 #ifdef USE_EEP
            "    -H --eep-send\t Homer sipcapture url (udp:X.X.X.X:XXXX)\n"
@@ -139,6 +141,7 @@ main(int argc, char* argv[])
     const char *match_expr;
     int match_insensitive = 0, match_invert = 0;
     int no_interface = 0, quiet = 0, rtp_capture = 0, rotate = 0, no_config = 0;
+    int ai_agent_mode = 0;
     vector_t *infiles = vector_create(0, 1);
     vector_t *indevices = vector_create(0, 1);
     char *token;
@@ -172,11 +175,12 @@ main(int argc, char* argv[])
         { "eep-parse", required_argument, 0, 'E' },
 #endif
         { "quiet", no_argument, 0, 'q' },
+        { "ai-agent", no_argument, 0, 'A' },
     };
 
     // Parse command line arguments that have high priority
     opterr = 0;
-    char *options = "hVd:I:O:B:pqtW:k:crl:ivNqDL:H:ERf:FT:t";
+    char *options = "hVd:I:O:B:pqtW:k:crl:ivNqDL:H:ERf:FT:tA";
     while ((opt = getopt_long(argc, argv, options, long_options, &idx)) != -1) {
         switch (opt) {
             case 'h':
@@ -297,6 +301,11 @@ main(int argc, char* argv[])
             case 't':
                 setting_set_value(SETTING_TELEPHONE_EVENT, SETTING_ON);
                 break;
+            case 'A':
+                ai_agent_mode = 1;
+                no_interface = 1;
+                setting_set_value(SETTING_CAPTURE_STORAGE, "none");
+                break;
                 // Dark options for dummy ones
             case 'p':
             case 'W':
@@ -386,6 +395,11 @@ main(int argc, char* argv[])
             token = strtok(NULL, ",");
         }
         sng_free(token);
+    }
+
+    // Enable AI agent output mode if requested
+    if (ai_agent_mode) {
+        sip_set_ai_output_mode(1);
     }
 
     // If we have an input file, load it
@@ -528,6 +542,11 @@ main(int argc, char* argv[])
 
     // Deinitialize interface
     ncurses_deinit();
+
+    // Disable AI output mode (will flush remaining batches)
+    if (ai_agent_mode) {
+        sip_set_ai_output_mode(0);
+    }
 
     // Deinitialize configuration options
     deinit_options();
